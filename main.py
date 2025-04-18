@@ -28,18 +28,32 @@ async def agrupar_pasajeros(pasajeros: List[Pasajero]):
         return matriz
 
     distancias_km = calcular_matriz_distancia_km(coords)
+
+    # Agrupamiento inicial con DBSCAN para encontrar grupos por cercanía (< 4km)
     dbscan = DBSCAN(eps=4, min_samples=2, metric='precomputed')
     labels = dbscan.fit_predict(distancias_km)
-
-    df['grupo'] = labels
+    df['grupo_base'] = labels
 
     grupos_resultado = []
-    for grupo_id in sorted(df['grupo'].unique()):
-        miembros = df[df['grupo'] == grupo_id]
-        grupo_nombre = f"Grupo {grupo_id + 1}" if grupo_id != -1 else "Sin grupo"
-        grupos_resultado.append({
-            "grupo": grupo_nombre,
-            "pasajeros": miembros[['nombre', 'telefono', 'lat', 'lng']].to_dict(orient='records')
-        })
+    grupo_contador = 1
+
+    # Recorremos los grupos base para dividir en subgrupos de máximo 4
+    for grupo_id in sorted(df['grupo_base'].unique()):
+        miembros = df[df['grupo_base'] == grupo_id]
+        if len(miembros) <= 4:
+            grupos_resultado.append({
+                "grupo": f"Grupo {grupo_contador}",
+                "pasajeros": miembros[['nombre', 'telefono', 'lat', 'lng']].to_dict(orient='records')
+            })
+            grupo_contador += 1
+        else:
+            # Si hay más de 4, crear subgrupos de a máximo 4 personas
+            subgrupos = [miembros[i:i+4] for i in range(0, len(miembros), 4)]
+            for sub in subgrupos:
+                grupos_resultado.append({
+                    "grupo": f"Grupo {grupo_contador}",
+                    "pasajeros": sub[['nombre', 'telefono', 'lat', 'lng']].to_dict(orient='records')
+                })
+                grupo_contador += 1
 
     return {"grupos": grupos_resultado}
