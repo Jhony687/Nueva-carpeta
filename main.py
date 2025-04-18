@@ -10,6 +10,7 @@ app = FastAPI()
 
 class Pasajero(BaseModel):
     nombre: str
+    telefono: str
     lat: float
     lng: float
 
@@ -29,6 +30,7 @@ async def agrupar_pasajeros(pasajeros: List[Pasajero]):
     distancias_km = calcular_matriz_distancia_km(coords)
     dbscan = DBSCAN(eps=4, min_samples=2, metric='precomputed')
     labels = dbscan.fit_predict(distancias_km)
+
     df['grupo'] = labels
 
     grupos_resultado = []
@@ -37,8 +39,7 @@ async def agrupar_pasajeros(pasajeros: List[Pasajero]):
         grupo_nombre = f"Grupo {grupo_id + 1}" if grupo_id != -1 else "Sin grupo"
         grupos_resultado.append({
             "grupo": grupo_nombre,
-            "pasajeros": miembros[['nombre', 'lat', 'lng']].to_dict(orient='records')
+            "pasajeros": miembros[['nombre', 'telefono', 'lat', 'lng']].to_dict(orient='records')
         })
 
     return {"grupos": grupos_resultado}
-    
