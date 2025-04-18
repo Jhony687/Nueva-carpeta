@@ -11,6 +11,7 @@ app = FastAPI()
 class Pasajero(BaseModel):
     nombre: str
     telefono: str
+    direccion: str
     lat: float
     lng: float
 
@@ -43,7 +44,7 @@ async def agrupar_pasajeros(pasajeros: List[Pasajero]):
         if len(miembros) <= 4:
             grupos_resultado.append({
                 "grupo": f"Grupo {grupo_contador}",
-                "pasajeros": miembros[['nombre', 'telefono', 'lat', 'lng']].to_dict(orient='records')
+                "pasajeros": miembros[['nombre', 'telefono', 'direccion', 'lat', 'lng']].to_dict(orient='records')
             })
             grupo_contador += 1
         else:
@@ -52,7 +53,7 @@ async def agrupar_pasajeros(pasajeros: List[Pasajero]):
             for sub in subgrupos:
                 grupos_resultado.append({
                     "grupo": f"Grupo {grupo_contador}",
-                    "pasajeros": sub[['nombre', 'telefono', 'lat', 'lng']].to_dict(orient='records')
+                    "pasajeros": sub[['nombre', 'telefono', 'direccion', 'lat', 'lng']].to_dict(orient='records')
                 })
                 grupo_contador += 1
 
